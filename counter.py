@@ -24,21 +24,18 @@ except ImportError:
     
     tkinter_needed = False 
 
-# --- Globals ---
+## GLOBALS ##
 console = Console()
 MIN_COUNT = 1000  
 REPORT1_TOP_N = 25 
 REPORT2_TOP_N = 50 
 MIN_WORD_LENGTH = 5 
 
-# --- Helper Functions ---
 
 def clear_console():
-    """Clears the terminal screen."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def format_rich_text(text):
-    """Formats text with [[number]] tags into a Rich markup string."""
     segments = re.split(r'(\[\[\d+\]\])', text)
     current_style = "white"  
     output_string = ""
@@ -84,7 +81,6 @@ except ValueError:
     ART_MAX_WIDTH = 0
 
 def generate_ascii_art():
-    """Prints the predefined MR_PROGRAMM_ART, centered."""
     terminal_width = console.width
     
     padding = " " * max(0, (terminal_width - ART_MAX_WIDTH) // 2)
@@ -94,7 +90,6 @@ def generate_ascii_art():
         rich_print(padding + line)
 
 def get_folder_path():
-    """Gets the folder path from the user using one of two methods."""
     global tkinter_needed 
     while True:
         clear_console()
@@ -163,18 +158,16 @@ def get_folder_path():
             
 
 def display_title():
-    """Displays the program title and header."""
     border = "                 [[215]].o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o..o0o."
     rich_print(border)
     rich_print("")
     generate_ascii_art()
     rich_print("")
     rich_print("                                 [[45]]COMMON PASSWORDS [[87]]USED [[217]]COUNTER    [[15]]version [[1]]( [[9]]1.0 [[1]]) ")
-    rich_print("                                           [[7]]mr-programm1@proton.me   [[142]]https://github.com/Mr-Programm   ")                                                          
+    rich_print("                              [[7]]mr-programm1@proton.me   [[142]]https://github.com/Mr-Programm   ")                                                          
     rich_print(border)
 
 def analyze_files(folder_path):
-    """Reads files, extracts passwords, counts them and words (>=MIN_WORD_LENGTH chars) within them."""
     password_counter = Counter()
     word_counter = Counter()
     all_passwords = [] 
@@ -219,7 +212,6 @@ def analyze_files(folder_path):
              rich_print(f"\n[[3]]Warning: [[15]]No passwords found (lines with ':password') in the processed files.")
              return None, None, None 
 
-        # --- Word Analysis (with length filter) ---
         rich_print(f"[[15]]Analyzing words (min length {MIN_WORD_LENGTH}) within passwords...") 
         for password in all_passwords:
             password_lower = password.lower()
@@ -255,7 +247,6 @@ def analyze_files(folder_path):
 
 
 def display_report(report_data, title, header, top_n, type_label):
-    """Displays a formatted report in the console using rich_print."""
     clear_console()
     rich_print(title)
     rich_print(header)
@@ -310,7 +301,6 @@ def save_report(report_data, filename, folder_path, title, header, type_label):
 
     try:
         with open(save_path, 'w', encoding='utf-8') as f:
-            # Remove color tags before writing title and header
             clean_title = strip_color_tags(title).strip()
             clean_header = strip_color_tags(header).strip()
 
@@ -324,36 +314,29 @@ def save_report(report_data, filename, folder_path, title, header, type_label):
                     min_req_text += f" and minimum length of {MIN_WORD_LENGTH}"
                  f.write(f"\nNo {type_label} found meeting requirements ({min_req_text}).\n")
             else:
-                 # --- Start of Width Calculation Change ---
-                 # Determine width for alignment based on actual data
+
                  try:
-                    # Find max length of the actual items (password/word strings)
-                    # Ensure items are strings for len()
+
                     max_item_len = max(len(str(item[0])) for item in report_data) if report_data else 0
 
-                    # Set a generous fixed minimum width OR the max length + padding, whichever is larger.
-                    # This ensures space for the item AND the count part on the same line.
-                    # Let's use a minimum of 40 characters for the item field.
-                    item_width = max(40, max_item_len + 5) # Increased minimum width and padding
+
+                    item_width = max(40, max_item_len + 5)
 
                  except Exception as e: # Handle potential errors during calculation
-                    # Use console.print for plain error message to console if needed
-                    # console.print(f"Debug: Error calculating max_item_len: {e}")
-                    item_width = 50 # Fallback to a reasonably large width
-                 # --- End of Width Calculation Change ---
+                 
+                    item_width = 50 
+               
 
                  for i, (item, count) in enumerate(report_data):
-                     # Optional: Sanitize item just in case it contains newlines (unlikely)
+                   
                      safe_item = str(item).replace('\n', '').replace('\r', '')
 
-                     # Write the line using the calculated width
-                     # The f-string now correctly allocates enough space via item_width
+                
                      f.write(line_format.format(index=i + 1, item=safe_item, width=item_width, count=count) + "\n")
 
     except Exception as e:
-        # Use rich_print for console error message which might have tags
+       
         rich_print(f"\n[[1]]Error saving report to [[14]]{save_path}[[15]]: {e}")
-# --- Main Program Flow ---
 
 def main():
     while True: 
@@ -373,7 +356,6 @@ def main():
             time.sleep(4)
             continue 
 
-        # --- Display Report 1 ---
         report1_title = "[[11]]REPORT [[15]]# [[51]]1"
         report1_header = "[[15]]TOP [[11]]PASSWORDS [[9]]FOUND\n[[11]]-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-"
         report1_shown = display_report(sorted_passwords, report1_title, report1_header, REPORT1_TOP_N, "passwords")
@@ -387,7 +369,6 @@ def main():
              time.sleep(3) 
 
 
-        # --- Display Report 2 ---
         report2_title = "[[11]]REPORT [[15]]# [[81]]2"
         report2_header = f"[[15]]TOP [[1]]COMMON [[141]]WORDS [[9]](LEN>={MIN_WORD_LENGTH}) [[9]]FOUND [[15]]IN [[11]]PASSWORDS\n[[11]]-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=--=-=-=-=-=-=-=-=-=-=-"
         report2_shown = display_report(sorted_words, report2_title, report2_header, REPORT2_TOP_N, "words")
